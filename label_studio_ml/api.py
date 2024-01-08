@@ -1,3 +1,7 @@
+'''
+实例化modle时改为：
+    model = MODEL_CLASS(project_id,label_config)
+'''
 import logging
 
 from flask import Flask, request, jsonify
@@ -55,7 +59,7 @@ def _predict():
     label_config = data.get('label_config')
     context = params.pop('context', {})
 
-    model = MODEL_CLASS(project_id)
+    model = MODEL_CLASS(project_id,label_config)
     model.use_label_config(label_config)
 
     predictions = model.predict(tasks, context=context, **params)
@@ -67,8 +71,10 @@ def _predict():
 def _setup():
     data = request.json
     project_id = data.get('project').split('.', 1)[0]
+    print("project_id",project_id)
     label_config = data.get('schema')
-    model = MODEL_CLASS(project_id)
+    print("label_config",label_config)
+    model = MODEL_CLASS(project_id,label_config)
     model.use_label_config(label_config)
     model_version = model.get('model_version')
     return jsonify({'model_version': model_version})
@@ -90,7 +96,7 @@ def webhook():
         return jsonify({'status': 'Unknown event'}), 200
     project_id = str(data['project']['id'])
     label_config = data['project']['label_config']
-    model = MODEL_CLASS(project_id)
+    model = MODEL_CLASS(project_id,label_config)
     model.use_label_config(label_config)
     model.fit(event, data)
     return jsonify({}), 201
